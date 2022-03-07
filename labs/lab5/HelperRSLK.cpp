@@ -16,7 +16,7 @@ uint32_t countForDistance(uint32_t distance) {
 /*Drives the RSLK bot x distance.
   Parameters:
   distance (uint32_t): distance to travel.
-  direction (bool): Specifies the direction of the bot. (not implemented yet)
+  direction (bool): Specifies the direction of the bot.
   wheelSpeedL (uint16_t): The starting wheel speed for the left motor.
   wheelSpeedR (uint16_t): The starting wheel speed for the right motor.
 
@@ -37,7 +37,7 @@ void driveStraight(uint32_t distance, bool direction, uint8_t wheelSpeed) {
 
   // Set up the motors and encoders
   resetLeftEncoderCnt();  resetRightEncoderCnt();   // Set encoder pulse count back to 0
-  setMotorDirection(BOTH_MOTORS,MOTOR_DIR_FORWARD); // Cause the robot to drive forward
+  setMotorDirection(BOTH_MOTORS,direction); // Cause the robot to drive in the direction specified
   enableMotor(BOTH_MOTORS);                         // "Turn on" the motor
   setMotorSpeed(LEFT_MOTOR,wheelSpeedL);         // Set motor speeds - variable,
   setMotorSpeed(RIGHT_MOTOR, wheelSpeedR);        //   may change (adjust) later
@@ -159,13 +159,13 @@ void turnInPlace(uint16_t degrees, bool direction) {
   Parameters:
   degrees (uint16_t): Specifies the amount of degrees to drive for.
   radius (uint16_t): Specifies the radius of the cirlce.
-  direction (bool): Specifies the direction of the bot. (not implemented yet)
+  direction (bool): Specifies the direction of the bot.
 
   Returns:
   void
 */
 void driveCircle(uint16_t degrees, uint16_t radius, bool direction) {
-  // Calculating the encoder counts for the left and right wheel.
+  // Calculating the encoder counts for the inner and outer wheel.
   uint16_t distanceInnerWheel = round((float(degrees)/360) * (2*PI*(radius-7)));
   uint16_t distanceOuterWheel = round((float(degrees)/360) * (2*PI*(radius+7)));
   uint32_t totalInnerCount = countForDistance(distanceInnerWheel);
@@ -173,9 +173,17 @@ void driveCircle(uint16_t degrees, uint16_t radius, bool direction) {
   uint32_t innerEncoderCount = 0;
   uint32_t outerEncoderCount = 0;
 
-  // Setting wheel speed for both motors
-  uint8_t wheelSpeedIn = 40;
-  uint8_t wheelSpeedOut = 48;
+  int8_t wheelSpeedIn;  // Wheel speed for the inner wheel.
+  int8_t wheelSpeedOut; // Wheel speed for the outer wheel.
+
+  // Setting wheel speed for both motors based on direction.
+  if(direction == LEFT){
+      wheelSpeedIn = 40;
+      wheelSpeedOut = 48;
+  } else {
+      wheelSpeedOut = 48;
+      wheelSpeedin = 40;
+  }
   uint8_t defaultSpeedIn = wheelSpeedIn;
   uint8_t defaultSpeedOut = wheelSpeedOut;
 
@@ -196,7 +204,13 @@ void driveCircle(uint16_t degrees, uint16_t radius, bool direction) {
 
   // Running the motors while both are less than the total encoder count.
   while(innerEncoderCount < totalInnerCount && outerEncoderCount < totalOuterCount){
-    innerEncoderCount = getEncoderLeftCnt(); outerEncoderCount = getEncoderRightCnt();
+    // Retrieving the encoder counts. If the direction is left then inner count = left encoder count.
+    // If not then inner count = right encoder count.
+    if(direction == LEFT){
+        innerEncoderCount = getEncoderLeftCnt(); outerEncoderCount = getEncoderRightCnt();
+    } else {
+        innerEncoderCount = getEncoderRightCnt(); outerEncoderCount = getEncoderLeftCnt();
+    }
 
     // Checking to see if the left encoder count is less than the right.
     if((outerRatio*innerEncoderCount) + 1 < outerEncoderCount){
