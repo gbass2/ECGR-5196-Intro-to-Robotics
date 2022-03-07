@@ -173,17 +173,11 @@ void driveCircle(uint16_t degrees, uint16_t radius, bool direction) {
   uint32_t innerEncoderCount = 0;
   uint32_t outerEncoderCount = 0;
 
-  int8_t wheelSpeedIn;  // Wheel speed for the inner wheel.
-  int8_t wheelSpeedOut; // Wheel speed for the outer wheel.
+  int8_t wheelSpeedIn = 40;  // Wheel speed for the inner wheel.
+  int8_t wheelSpeedOut = 48; // Wheel speed for the outer wheel.
 
-  // Setting wheel speed for both motors based on direction.
-  if(direction == LEFT){
-      wheelSpeedIn = 40;
-      wheelSpeedOut = 48;
-  } else {
-      wheelSpeedOut = 48;
-      wheelSpeedIn = 40;
-  }
+  // Setting wheel speed for both motors
+
   uint8_t defaultSpeedIn = wheelSpeedIn;
   uint8_t defaultSpeedOut = wheelSpeedOut;
 
@@ -199,8 +193,15 @@ void driveCircle(uint16_t degrees, uint16_t radius, bool direction) {
   setMotorDirection(LEFT_MOTOR,MOTOR_DIR_FORWARD);
   enableMotor(RIGHT_MOTOR);                         // "Turn on" the motor
   enableMotor(LEFT_MOTOR);                         // "Turn on" the motor
-  setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedOut);
-  setRawMotorSpeed(LEFT_MOTOR, wheelSpeedIn);
+
+  // Setting speeds.
+  if(direction == LEFT){
+    setRawMotorSpeed(LEFT_MOTOR, wheelSpeedIn);
+    setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedOut);
+  } else {
+    setRawMotorSpeed(LEFT_MOTOR, wheelSpeedOut);
+    setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedIn);
+  }
 
   // Running the motors while both are less than the total encoder count.
   while(innerEncoderCount < totalInnerCount && outerEncoderCount < totalOuterCount){
@@ -234,8 +235,14 @@ void driveCircle(uint16_t degrees, uint16_t radius, bool direction) {
       }
     }
 
-    setRawMotorSpeed(LEFT_MOTOR, wheelSpeedIn);
-    setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedOut);
+    // Setting updated speeds.
+    if(direction == LEFT){
+      setRawMotorSpeed(LEFT_MOTOR, wheelSpeedIn);
+      setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedOut);
+    } else {
+      setRawMotorSpeed(LEFT_MOTOR, wheelSpeedOut);
+      setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedIn);
+    }
   }
 
   disableMotor(BOTH_MOTORS);

@@ -24,7 +24,7 @@ void loop() {
 
  delay(2000);
  // Drive the robot 75 cm.
- driveStraight(radius,BACKWARD,wheelSpeed);
+ driveStraight(radius,FORWARD,wheelSpeed);
  delay(5000);
 
  // Turn 90 degrees CCW.
