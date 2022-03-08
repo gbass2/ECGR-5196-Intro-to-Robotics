@@ -247,3 +247,50 @@ void driveCircle(uint16_t degrees, uint16_t radius, bool direction) {
 
   disableMotor(BOTH_MOTORS);
 }
+
+/* Measures distance using ultrasonic sensor.
+  Returns:
+  int: Distance measured.
+*/
+int measureDistance() {
+  long pulseLength, centimeters;
+  int distanceArray[5];
+
+  // Measuring 5 pulses from the ultrasonic.
+  for(size_t i=0; i < 5; i++) {
+    digitalWrite(trigPin, LOW);            // send low to get a clean pulse
+    delayMicroseconds(10);                  // let it settle
+    digitalWrite(trigPin, HIGH);           // send high to trigger device
+    delayMicroseconds(10);                 // let it settle
+    digitalWrite(trigPin, LOW);            // send low to get a clean pulse
+    delayMicroseconds(10);                  // let it settle
+    pulseLength = pulseIn(echoPin, HIGH);  // measure pulse coming back
+    centimeters = pulseLength / 58;
+    distanceArray[i] = centimeters; // Adding distance to array.
+  }
+
+  // Sort the array.
+  sortArray(distanceArray, 5);
+
+  return distanceArray[2]; // Returning the median of the array.
+}
+
+/*Sorts an array of any type. Pass arry by reference.
+  Parameters:
+  array (T): Templated array to be sorted.
+
+  Returns:
+  void
+*/
+template<typename T> void sortArray(T& array, size_t arrSize) {
+  int hold;
+  for(size_t i=0; i < arrSize; i++) {
+    for(size_t j=0; j < arrSize; j++) {
+      if(array[j]>array[j+1]) {
+        hold=array[j];
+        array[j]=array[j+1];
+        array[j+1]=hold;
+      }
+    }
+  }
+}
