@@ -1,8 +1,8 @@
 /*
-* Class:       ECGR 4161/5196 ultrasonic example
-* Authors:      Grayson Bass, Ryan Roscrow
+* Class:       ECGR 4161/5196 Lab 5
+* Authors:     Grayson Bass, Ryan Roscrow
 * Date:        02-28-2022
-* Description: Ultrasonic example
+* Description:
 */
 
 #include "SimpleRSLK.h"
@@ -18,6 +18,7 @@ void setup() {
 }
 
 void loop() {
-  Serial.println(measureDistance());
-  delay(1000);
+    uint8_t wheelSpeed = 15;
+    uint16_t degrees = 90; // Degrees to turnInPlace
+    uint16_t distanceToWall; // Current distance to wall.    
 }
