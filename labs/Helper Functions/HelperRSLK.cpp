@@ -172,7 +172,7 @@ void turnInPlace(uint16_t degrees, bool direction) {
   void
 */
 void turnInPlaceStatic(bool direction) {
-   uint32_t totalEncoderCount = 10;
+   uint32_t totalEncoderCount = 5;
    uint8_t wheelSpeedR = 20;
    uint8_t wheelSpeedL = 21;
 
