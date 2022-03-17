@@ -32,14 +32,15 @@ void loop() {
 
     // Getting an intial distance.
     currentDistance = measureDistance();
-    currentDistance = floor(pow(10,2)*currentDistance)/pow(10,2); // Setting the precision of the float to 2 digits.
+    currentDistance = floor(pow(10,3)*currentDistance)/pow(10,3); // Setting the precision of the float to 3 digits.
 
     // Looping and measuring every 5 degrees.
     while(1) {
       prevDistance = currentDistance;
       turnInPlaceStatic(LEFT);
       currentDistance = measureDistance();
-      currentDistance = floor(pow(10,2)*currentDistance)/pow(10,2); // Setting the precision of the float to 2 digits.
+      currentDistance = floor(pow(10,3)*currentDistance)/pow(10,3); // Setting the precision of the float to 3 digits.
+      Serial.println(currentDistance);
 
       // Checking to see if the current distance is greater than the previous
       // If it is then end the loop
