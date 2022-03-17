@@ -1,5 +1,5 @@
 /*
-* Class:       ECGR 4161/5196 Lab 5
+* Class:       ECGR 4161/5196 Lab 6
 * Authors:     Grayson Bass, Ryan Roscrow
 * Date:        02-28-2022
 * Description:
@@ -9,12 +9,14 @@
 #include "HelperRSLK.h"
 
 void setup() {
- setupRSLK();  // Set up all of the pins & functions needed to be used by the TI bot
- pinMode(trigPin, OUTPUT);
- pinMode(echoPin, INPUT);
+    setupRSLK();  // Set up all of the pins & functions needed to be used by the TI bot.
+    setupWaitBtn(LP_LEFT_BTN); // Set up left button.
+    setupLed(BLUE_LED); // Setup the blue led.
+    pinMode(trigPin, OUTPUT);
+    pinMode(echoPin, INPUT);
 
- Serial.begin(38400);
- while(!Serial);
+    Serial.begin(38400);
+    while(!Serial);
 }
 
 void loop() {
@@ -24,8 +26,13 @@ void loop() {
     float prevDistance; // previous distance to wall.
     uint16_t distance100CM = 100; // Distance to drive 100cm.
 
+    // Waiting for button to be pressed.
+    waitBtnPressed(LP_LEFT_BTN,"",BLUE_LED);
+    delay(2000);
+
     // Getting an intial distance.
     currentDistance = measureDistance();
+    Serial.println(currentDistance);
 
     // Looping and measuring every 5 degrees.
     while(1) {

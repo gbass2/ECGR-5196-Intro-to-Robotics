@@ -252,8 +252,9 @@ void driveCircle(uint16_t degrees, uint16_t radius, bool direction) {
   Returns:
   int: Distance measured.
 */
-int measureDistance() {
-  long pulseLength, centimeters;
+float measureDistance() {
+  long pulseLength;
+  float centimeters;
   float distanceArray[5];
 
   // Measuring 5 pulses from the ultrasonic.
