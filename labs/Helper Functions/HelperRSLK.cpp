@@ -254,7 +254,7 @@ void driveCircle(uint16_t degrees, uint16_t radius, bool direction) {
 */
 int measureDistance() {
   long pulseLength, centimeters;
-  int distanceArray[5];
+  float distanceArray[5];
 
   // Measuring 5 pulses from the ultrasonic.
   for(size_t i=0; i < 5; i++) {
@@ -265,7 +265,7 @@ int measureDistance() {
     digitalWrite(trigPin, LOW);            // send low to get a clean pulse
     delayMicroseconds(10);                  // let it settle
     pulseLength = pulseIn(echoPin, HIGH);  // measure pulse coming back
-    centimeters = pulseLength / 58;
+    centimeters = float(pulseLength) / 58;
     distanceArray[i] = centimeters; // Adding distance to array.
   }
 
@@ -283,7 +283,7 @@ int measureDistance() {
   void
 */
 template<typename T> void sortArray(T& array, size_t arrSize) {
-  int hold;
+  float hold;
   for(size_t i=0; i < arrSize; i++) {
     for(size_t j=0; j < arrSize; j++) {
       if(array[j]>array[j+1]) {

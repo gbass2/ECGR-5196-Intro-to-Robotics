@@ -30,7 +30,7 @@ void pivot(uint16_t degrees, bool direction); // Function for pivoting x number 
 void turnInPlace(uint16_t degrees, bool direction); // Function for turning in place x number of degrees.
 
 // Function that returns the median distance using an ultrasonic sensor
-int measureDistance();
+float measureDistance();
 template<typename T> void sortArray(T& array, size_t arrSize); // Helper function for sorting an array. Templated for any type.
 
 #endif

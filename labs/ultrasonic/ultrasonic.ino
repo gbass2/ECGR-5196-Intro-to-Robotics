@@ -19,5 +19,5 @@ void setup() {
 
 void loop() {
   Serial.println(measureDistance());
-  delay(1000);
+  delay(500);
 }
