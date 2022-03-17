@@ -115,9 +115,64 @@ void pivot(uint16_t degrees, bool direction) {
   }
 }
 
+
+/*Turn in place the x degrees.
+  Parameters:
+  degrees (uint16_t): degrees to pivot.
+  direction (bool): Specifies the direction of the bot.
+
+  Returns:
+  void
+*/
 void turnInPlace(uint16_t degrees, bool direction) {
-   uint16_t distance = round((float(degrees)/360)*PI*14);
+   float distance = round((float(degrees)/360)*PI*14);
    uint32_t totalEncoderCount = countForDistance(distance);
+   uint8_t wheelSpeedR = 20;
+   uint8_t wheelSpeedL = 21;
+
+   // Reset encoder counts
+   resetRightEncoderCnt();
+   resetLeftEncoderCnt();
+
+   // Turn in place left
+   if(direction == LEFT){
+     // Set up the motors
+     setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_FORWARD); // Set the right motor to go forwards
+     setMotorDirection(LEFT_MOTOR,MOTOR_DIR_BACKWARD);  // Set the left motor to go backwards
+     enableMotor(RIGHT_MOTOR);                         // "Turn on" the motor
+     enableMotor(LEFT_MOTOR);                         // "Turn on" the motor
+     setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedR);
+     setRawMotorSpeed(LEFT_MOTOR, wheelSpeedL);
+
+     // Drive motors until it has received the correct number of pulses to travel
+     while(getEncoderRightCnt()<totalEncoderCount && getEncoderLeftCnt()<totalEncoderCount);       // stay in loop
+     disableMotor(RIGHT_MOTOR);
+     disableMotor(LEFT_MOTOR);
+  } else {
+     // Turn in place right
+     // Set up the motors
+     setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_BACKWARD); // Set the right motor to go backwards
+     setMotorDirection(LEFT_MOTOR,MOTOR_DIR_FORWARD);  // Set the left motor to go forwards
+     enableMotor(RIGHT_MOTOR);                         // "Turn on" the motor
+     enableMotor(LEFT_MOTOR);                         // "Turn on" the motor
+     setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedR);
+     setRawMotorSpeed(LEFT_MOTOR, wheelSpeedL);
+
+     // Drive motors until it has received the correct number of pulses to travel
+     while(getEncoderRightCnt()<totalEncoderCount && getEncoderLeftCnt()<totalEncoderCount);       // stay in loop
+     disableMotor(BOTH_MOTORS);
+  }
+}
+
+/*Turn in place the smallest amount possible.
+  Parameters:
+  direction (bool): Specifies the direction of the bot.
+
+  Returns:
+  void
+*/
+void turnInPlaceStatic(bool direction) {
+   uint32_t totalEncoderCount = 10;
    uint8_t wheelSpeedR = 20;
    uint8_t wheelSpeedL = 21;
 
@@ -255,10 +310,10 @@ void driveCircle(uint16_t degrees, uint16_t radius, bool direction) {
 float measureDistance() {
   long pulseLength;
   float centimeters;
-  float distanceArray[5];
+  float distanceArray[11];
 
   // Measuring 5 pulses from the ultrasonic.
-  for(size_t i=0; i < 5; i++) {
+  for(size_t i=0; i < 11; i++) {
     digitalWrite(trigPin, LOW);            // send low to get a clean pulse
     delayMicroseconds(10);                  // let it settle
     digitalWrite(trigPin, HIGH);           // send high to trigger device
@@ -271,9 +326,9 @@ float measureDistance() {
   }
 
   // Sort the array.
-  sortArray(distanceArray, 5);
+  sortArray(distanceArray, 11);
 
-  return distanceArray[2]; // Returning the median of the array.
+  return distanceArray[6]; // Returning the median of the array.
 }
 
 /*Sorts an array of any type. Pass arry by reference.

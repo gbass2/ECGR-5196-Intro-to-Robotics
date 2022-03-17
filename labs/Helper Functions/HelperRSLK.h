@@ -28,6 +28,8 @@ void driveStraight(uint32_t distance, bool direction, uint8_t wheelSpeed); // Fu
 void driveCircle(uint16_t degrees, uint16_t radius, bool direction); // Function for driving in a circle x number of degrees.
 void pivot(uint16_t degrees, bool direction); // Function for pivoting x number of degrees.
 void turnInPlace(uint16_t degrees, bool direction); // Function for turning in place x number of degrees.
+void turnInPlaceStatic(bool direction); // Function for turning in place hard coded encoder pulses.
+
 
 // Function that returns the median distance using an ultrasonic sensor
 float measureDistance();
