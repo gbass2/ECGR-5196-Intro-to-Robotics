@@ -28,11 +28,30 @@ void driveStraight(uint32_t distance, bool direction, uint8_t wheelSpeed); // Fu
 void driveCircle(uint16_t degrees, uint16_t radius, bool direction); // Function for driving in a circle x number of degrees.
 void pivot(uint16_t degrees, bool direction); // Function for pivoting x number of degrees.
 void turnInPlace(uint16_t degrees, bool direction); // Function for turning in place x number of degrees.
-void turnInPlaceStatic(bool direction); // Function for turning in place hard coded encoder pulses.
-
+void turnInPlaceStatic(bool direction); // Function for turning in place a set number of pulses.
 
 // Function that returns the median distance using an ultrasonic sensor
 float measureDistance();
-template<typename T> void sortArray(T& array, size_t arrSize); // Helper function for sorting an array. Templated for any type.
+
+/*Sorts an array of any type. Pass arry by reference.
+  The definition has to be in the header file.
+  Parameters:
+  array (T): Templated array to be sorted.
+
+  Returns:
+  void
+*/
+template<typename T> void sortArray(T& array, size_t arrSize) {
+  float hold;
+  for(size_t i=0; i < arrSize; i++) {
+    for(size_t j=0; j < arrSize; j++) {
+      if(array[j]>array[j+1]) {
+        hold=array[j];
+        array[j]=array[j+1];
+        array[j+1]=hold;
+      }
+    }
+  }
+}
 
 #endif

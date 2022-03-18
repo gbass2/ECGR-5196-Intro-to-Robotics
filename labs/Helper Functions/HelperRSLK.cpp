@@ -43,7 +43,7 @@ void driveStraight(uint32_t distance, bool direction, uint8_t wheelSpeed) {
   setMotorSpeed(RIGHT_MOTOR, wheelSpeedR);        //   may change (adjust) later
 
   // Drive both motors until both have received the correct number of pulses to travel
-  while(leftTotalCount<(straight-100) || rightTotalCount<(straight-50)) {
+  while(leftTotalCount<(straight-50) || rightTotalCount<(straight-50)) {
     leftTotalCount = getEncoderLeftCnt(); rightTotalCount = getEncoderRightCnt();
 
     // Increasing the left wheel speed if the encoder count is less than the right.
@@ -80,7 +80,7 @@ void driveStraight(uint32_t distance, bool direction, uint8_t wheelSpeed) {
     leftTotalCount = getEncoderLeftCnt(); rightTotalCount = getEncoderRightCnt();
 
     if(wheelSpeed-i >= 5){
-      if(i <= 5){
+      if(i <= 6){
         setMotorSpeed(LEFT_MOTOR, defaultSpeedL-i);
         setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-(i+1));
       } else {
@@ -148,8 +148,8 @@ void pivot(uint16_t degrees, bool direction) {
 void turnInPlace(uint16_t degrees, bool direction) {
    float distance = round((float(degrees)/360)*PI*14);
    uint32_t totalEncoderCount = countForDistance(distance);
-   uint8_t wheelSpeedR = 20;
-   uint8_t wheelSpeedL = 21;
+   uint8_t wheelSpeedR;
+   uint8_t wheelSpeedL;
 
    // Reset encoder counts
    resetRightEncoderCnt();
@@ -157,6 +157,8 @@ void turnInPlace(uint16_t degrees, bool direction) {
 
    // Turn in place left
    if(direction == LEFT){
+     wheelSpeedR = 20;
+     wheelSpeedL = 21;
      // Set up the motors
      setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_FORWARD); // Set the right motor to go forwards
      setMotorDirection(LEFT_MOTOR,MOTOR_DIR_BACKWARD);  // Set the left motor to go backwards
@@ -170,6 +172,8 @@ void turnInPlace(uint16_t degrees, bool direction) {
      disableMotor(RIGHT_MOTOR);
      disableMotor(LEFT_MOTOR);
   } else {
+     wheelSpeedR = 21;
+     wheelSpeedL = 20;
      // Turn in place right
      // Set up the motors
      setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_BACKWARD); // Set the right motor to go backwards
@@ -350,24 +354,4 @@ float measureDistance() {
   sortArray(distanceArray, 11);
 
   return distanceArray[6]; // Returning the median of the array.
-}
-
-/*Sorts an array of any type. Pass arry by reference.
-  Parameters:
-  array (T): Templated array to be sorted.
-
-  Returns:
-  void
-*/
-template<typename T> void sortArray(T& array, size_t arrSize) {
-  float hold;
-  for(size_t i=0; i < arrSize; i++) {
-    for(size_t j=0; j < arrSize; j++) {
-      if(array[j]>array[j+1]) {
-        hold=array[j];
-        array[j]=array[j+1];
-        array[j+1]=hold;
-      }
-    }
-  }
 }

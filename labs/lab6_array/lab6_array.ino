@@ -22,44 +22,48 @@ void setup() {
 void loop() {
     uint8_t wheelSpeed = 15;
     uint16_t degrees = 90; // Degrees to turnInPlace after driving straight.
-    float currentDistance; // Current distance to wall.
-    float prevDistance; // previous distance to wall.
     uint16_t distance100CM = 100; // Distance to drive 100cm.
+    size_t arrSize = 15;
+    float distToWall[15];
+    float distToWallSorted[15];
+    uint16_t perpendicularDist;
 
     // Waiting for button to be pressed.
     waitBtnPressed(LP_LEFT_BTN,"",BLUE_LED);
     delay(2000);
 
-    // Getting an intial distance.
-    currentDistance = measureDistance();
-
-    // Looping and measuring every 5 degrees.
-    while(1) {
-      prevDistance = currentDistance;
+    // Measure the distances to the wall.
+    for(uint8_t i=0; i<arrSize; i++) {
+      distToWall[i] = measureDistance();
       turnInPlaceStatic(LEFT);
-      currentDistance = measureDistance();
-      Serial.println(currentDistance);
-
-      // Checking to see if the current distance is greater than the previous
-      // If it is then end the loop
-      if((currentDistance > (prevDistance+0.35)) && (currentDistance < 600)){
-        break;
-      }
-
       delay(1000);
     }
 
-    // Turn back to the right by 5 degrees since current distance was
-    // greater than previous distance.
-    delay(1000);
-    turnInPlaceStatic(RIGHT);
-//    delay(1000);
-//    turnInPlaceStatic(RIGHT);
-    currentDistance = prevDistance; // Setting the current distance back to the correct distance from the wall.
-    delay(1000);
+    // Copy the contents of array with the measurements.
+    for(uint8_t i=0; i<arrSize; i++) {
+      distToWallSorted[i] = distToWall[i]; 
+    }
+
+    // Sort the measurements.
+    sortArray(distToWallSorted, arrSize);
+
+    // Loop through the array to figure out how much to turn back by.
+    uint8_t counter; // Counter to hold how much to turn.
+    for(uint8_t i=0; i<arrSize; i++) {
+      if(distToWallSorted[0] == distToWall[i]) {
+        counter = i;
+        break;
+      }
+    }
+    // Turn back to perpendicular.
+    for(uint8_t i=0; i<(arrSize-counter); i++) {
+      turnInPlaceStatic(RIGHT);
+      delay(1000);
+    }
 
     // Drive to wall.
-    uint16_t distanceToTravel = currentDistance - 30; // Subtracting 30cm from the distance to the wall.
+    perpendicularDist = distToWallSorted[0];
+    uint16_t distanceToTravel = perpendicularDist - 30; // Subtracting 30cm from the distance to the wall.
     driveStraight(distanceToTravel, FORWARD, wheelSpeed);
 
     // Turn 90 CW.
@@ -69,6 +73,4 @@ void loop() {
     // Drive 100cm.
     delay(1000);
     driveStraight(distance100CM,FORWARD, wheelSpeed);
-
-    exit(1);
 }
