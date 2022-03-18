@@ -80,7 +80,7 @@ void driveStraight(uint32_t distance, bool direction, uint8_t wheelSpeed) {
     leftTotalCount = getEncoderLeftCnt(); rightTotalCount = getEncoderRightCnt();
 
     if(wheelSpeed-i >= 5){
-      if(i <= 3){
+      if(i <= 5){
         setMotorSpeed(LEFT_MOTOR, defaultSpeedL-i);
         setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-(i+1));
       } else {
