@@ -43,7 +43,7 @@ void driveStraight(uint32_t distance, bool direction, uint8_t wheelSpeed) {
   setMotorSpeed(RIGHT_MOTOR, wheelSpeedR);        //   may change (adjust) later
 
   // Drive both motors until both have received the correct number of pulses to travel
-  while(leftTotalCount<(straight) || rightTotalCount<(straight)) {
+  while(leftTotalCount<(straight-100) || rightTotalCount<(straight-50)) {
     leftTotalCount = getEncoderLeftCnt(); rightTotalCount = getEncoderRightCnt();
 
     // Increasing the left wheel speed if the encoder count is less than the right.
@@ -70,6 +70,27 @@ void driveStraight(uint32_t distance, bool direction, uint8_t wheelSpeed) {
 
     setMotorSpeed(LEFT_MOTOR, wheelSpeedL);
     setMotorSpeed(RIGHT_MOTOR, wheelSpeedR);
+  }
+
+  setMotorSpeed(LEFT_MOTOR, defaultSpeedL);
+  setMotorSpeed(RIGHT_MOTOR, defaultSpeedR);
+
+  uint8_t i = 1;
+  while(leftTotalCount<(straight) || rightTotalCount<(straight)) {
+    leftTotalCount = getEncoderLeftCnt(); rightTotalCount = getEncoderRightCnt();
+
+    if(wheelSpeed-i >= 5){
+      if(i <= 3){
+        setMotorSpeed(LEFT_MOTOR, defaultSpeedL-i);
+        setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-(i+1));
+      } else {
+        setMotorSpeed(LEFT_MOTOR, defaultSpeedL-(i+1));
+        setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-i);
+      }
+
+      i++;
+      delay(100);
+      }
   }
   disableMotor(BOTH_MOTORS);
 }

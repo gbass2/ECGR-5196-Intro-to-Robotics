@@ -32,20 +32,18 @@ void loop() {
 
     // Getting an intial distance.
     currentDistance = measureDistance();
-    currentDistance = floor(pow(10,3)*currentDistance)/pow(10,3); // Setting the precision of the float to 3 digits.
 
     // Looping and measuring every 5 degrees.
     while(1) {
       prevDistance = currentDistance;
       turnInPlaceStatic(LEFT);
       currentDistance = measureDistance();
-      currentDistance = floor(pow(10,3)*currentDistance)/pow(10,3); // Setting the precision of the float to 3 digits.
-      Serial.println(currentDistance);
 
       // Checking to see if the current distance is greater than the previous
       // If it is then end the loop
-      if(currentDistance >= prevDistance)
+      if((currentDistance > (prevDistance+0.3)) && (currentDistance < 600)){
         break;
+      }
 
       delay(1000);
     }
@@ -54,6 +52,8 @@ void loop() {
     // greater than previous distance.
     delay(1000);
     turnInPlaceStatic(RIGHT);
+//    delay(1000);
+//    turnInPlaceStatic(RIGHT);
     currentDistance = prevDistance; // Setting the current distance back to the correct distance from the wall.
     delay(1000);
 
