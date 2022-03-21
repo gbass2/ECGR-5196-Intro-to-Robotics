@@ -18,9 +18,9 @@ void loop() {
 
   delay(2000);
  
-  // Turn 90 degrees CCW.
-  turnInPlace(degrees,LEFT);
-  delay(1000);
+//  // Turn 90 degrees CCW.
+//  turnInPlace(degrees,LEFT);
+//  delay(1000);
 
   // Turn 90 degrees CW.
   turnInPlace(degrees,RIGHT);

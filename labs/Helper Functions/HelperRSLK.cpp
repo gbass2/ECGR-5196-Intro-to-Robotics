@@ -72,28 +72,35 @@ void driveStraight(uint32_t distance, bool direction, uint8_t wheelSpeed) {
     setMotorSpeed(RIGHT_MOTOR, wheelSpeedR);
   }
 
-  setMotorSpeed(LEFT_MOTOR, defaultSpeedL);
-  setMotorSpeed(RIGHT_MOTOR, defaultSpeedR);
+   // Slow down the bot with the last 50 encoder ticks
+   setMotorSpeed(LEFT_MOTOR, defaultSpeedL);
+   setMotorSpeed(RIGHT_MOTOR, defaultSpeedR);
 
-  uint8_t i = 1;
-  while(leftTotalCount<(straight) || rightTotalCount<(straight)) {
-    leftTotalCount = getEncoderLeftCnt(); rightTotalCount = getEncoderRightCnt();
+   uint8_t i = 1;
+   // Run the last 50 encoder ticks stepping down the speed.
+   while(leftTotalCount<(straight) || rightTotalCount<(straight)) {
+     leftTotalCount = getEncoderLeftCnt(); rightTotalCount = getEncoderRightCnt();
 
-    if(wheelSpeed-i >= 5){
-      if(i <= 6){
-        setMotorSpeed(LEFT_MOTOR, defaultSpeedL-i);
-        setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-(i+1));
-      } else {
-        setMotorSpeed(LEFT_MOTOR, defaultSpeedL-(i+1));
-        setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-i);
-      }
+     // Step down the speed until the speed is 5.
+     if(wheelSpeed-i >= 5){
+      // if i is less than 6 then slow down the right motor more than the left.
+       if(i <= 6){
+         setMotorSpeed(LEFT_MOTOR, defaultSpeedL-i);
+         setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-(i+1));
 
-      i++;
-      delay(100);
-      }
-  }
-  disableMotor(BOTH_MOTORS);
-}
+       // if i is greater than 6 then step down the left motor speed more than right.
+       } else {
+         setMotorSpeed(LEFT_MOTOR, defaultSpeedL-(i+1));
+         setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-i);
+       }
+
+       i++;
+       delay(100);
+       }
+   }
+   disableMotor(BOTH_MOTORS);
+ }
+
 
 /*Pivots the x degrees.
   Parameters:
@@ -169,11 +176,9 @@ void turnInPlace(uint16_t degrees, bool direction) {
 
      // Drive motors until it has received the correct number of pulses to travel
      while(getEncoderRightCnt()<totalEncoderCount && getEncoderLeftCnt()<totalEncoderCount);       // stay in loop
-     disableMotor(RIGHT_MOTOR);
-     disableMotor(LEFT_MOTOR);
   } else {
-     wheelSpeedR = 21;
-     wheelSpeedL = 20;
+     wheelSpeedR = 20;
+     wheelSpeedL = 21;
      // Turn in place right
      // Set up the motors
      setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_BACKWARD); // Set the right motor to go backwards
@@ -185,8 +190,12 @@ void turnInPlace(uint16_t degrees, bool direction) {
 
      // Drive motors until it has received the correct number of pulses to travel
      while(getEncoderRightCnt()<totalEncoderCount && getEncoderLeftCnt()<totalEncoderCount);       // stay in loop
-     disableMotor(BOTH_MOTORS);
   }
+  disableMotor(BOTH_MOTORS);
+
+  Serial.print("Expected: " + String(totalEncoderCount) + '\t');
+  Serial.print("Actual Right: " + String(getEncoderRightCnt()) + '\t');
+  Serial.println("Actual Left: " + String(getEncoderLeftCnt()));
 }
 
 /*Turn in place the smallest amount possible.
