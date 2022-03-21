@@ -73,10 +73,12 @@ void loop() {
     driveStraight(distanceToTravel, FORWARD, wheelSpeed);
 
     // Turn 90 CW.
-    delay(1000);
+    delay(8000);
     turnInPlace(degrees,RIGHT);
 
     // Drive 100cm.
     delay(1000);
     driveStraight(distance100CM,FORWARD, wheelSpeed);
+    delay(8000);
+
 }
