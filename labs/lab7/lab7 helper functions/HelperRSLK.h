@@ -24,12 +24,12 @@ const int echoPin = 33; // This is Port Pin 5.1 on the MSP432 Launchpad.
 
 // Functions for driving the robot.
 uint32_t countForDistance(float distance);
-void driveStraight(float distance, bool direction, uint8_t wheelSpeed); // Function for driving straight x number of cm.
-void driveCircle(uint16_t degrees, uint16_t radius, bool direction); // Function for driving in a circle x number of degrees.
-void pivot(uint16_t degrees, bool direction); // Function for pivoting x number of degrees.
-void turnInPlace(uint16_t degrees, bool direction); // Function for turning in place x number of degrees.
-void turnInPlaceStatic(bool direction); // Function for turning in place a set number of pulses.
-void stopMotorInterrupt(); // Stops the motor using interrupts.
+// Function for driving straight x number of cm.
+void driveStraight(float distance, bool direction, uint8_t wheelSpeed);
+// Function for turning in place x number of degrees.
+void turnInPlace(uint16_t degrees, bool direction);
+// Stops the motor using interrupts.
+void stopMotorInterrupt();
 
 // Function that returns the median distance using an ultrasonic sensor
 float measureDistance();

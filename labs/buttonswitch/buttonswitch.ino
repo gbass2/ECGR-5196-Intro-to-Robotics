@@ -19,12 +19,12 @@ void stopMotor() {
 void setup() {
  setupRSLK();  // Set up all of the pins & functions needed to be used by the TI bot
 
- attachInterrupt(digitalPinToInterrupt(BP_SW_PIN_0),stopMotor,RISING);
- attachInterrupt(digitalPinToInterrupt(BP_SW_PIN_1),stopMotor,RISING);
- attachInterrupt(digitalPinToInterrupt(BP_SW_PIN_2),stopMotor,RISING);
- attachInterrupt(digitalPinToInterrupt(BP_SW_PIN_3),stopMotor,RISING);
- attachInterrupt(digitalPinToInterrupt(BP_SW_PIN_4),stopMotor,RISING);
- attachInterrupt(digitalPinToInterrupt(BP_SW_PIN_5),stopMotor,RISING); 
+ attachInterrupt(digitalPinToInterrupt(BP_SW_PIN_0),stopMotorInterrupt,RISING);
+ attachInterrupt(digitalPinToInterrupt(BP_SW_PIN_1),stopMotorInterrupt,RISING);
+ attachInterrupt(digitalPinToInterrupt(BP_SW_PIN_2),stopMotorInterrupt,RISING);
+ attachInterrupt(digitalPinToInterrupt(BP_SW_PIN_3),stopMotorInterrupt,RISING);
+ attachInterrupt(digitalPinToInterrupt(BP_SW_PIN_4),stopMotorInterrupt,RISING);
+ attachInterrupt(digitalPinToInterrupt(BP_SW_PIN_5),stopMotorInterrupt,RISING); 
 
  Serial.begin(38400);
  while(!Serial);

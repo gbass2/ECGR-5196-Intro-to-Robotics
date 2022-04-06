@@ -7,7 +7,7 @@
   Returns:
   int: encoder pulses to drive x distance.
   */
-uint32_t countForDistance(uint32_t distance) {
+uint32_t countForDistance(float distance) {
   float temp = (WHEEL_DIAMETER * PI) / CNT_PER_REV;
   temp = distance / temp;
   return int(temp);
@@ -23,7 +23,7 @@ uint32_t countForDistance(uint32_t distance) {
   Returns:
   void
 */
-void driveStraight(uint32_t distance, bool direction, uint8_t wheelSpeed) {
+void driveStraight(float distance, bool direction, uint8_t wheelSpeed) {
   // Define speed and encoder count variables
   uint8_t wheelSpeedL = wheelSpeed;
   uint8_t wheelSpeedR = wheelSpeed;
@@ -82,18 +82,20 @@ void driveStraight(uint32_t distance, bool direction, uint8_t wheelSpeed) {
      leftTotalCount = getEncoderLeftCnt(); rightTotalCount = getEncoderRightCnt();
 
      // Step down the speed until the speed is 5.
-     if(wheelSpeed-i >= 5){
-      // if i is less than 6 then slow down the right motor more than the left.
-       if(i <= 6){
-         setMotorSpeed(LEFT_MOTOR, defaultSpeedL-i);
-         setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-(i+1));
+     if(wheelSpeed-i >= 0){
 
-       // if i is greater than 6 then step down the left motor speed more than right.
-       } else {
-         setMotorSpeed(LEFT_MOTOR, defaultSpeedL-(i+1));
-         setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-i);
-       }
-
+      // // if i is less than 6 then slow down the right motor more than the left.
+      //   if(i <= 4){
+      //       setMotorSpeed(LEFT_MOTOR, defaultSpeedL-i);
+      //       setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-(i+1));
+      //
+      //  // if i is greater than 6 then step down the left motor speed more than right.
+      //  } else {
+      //      setMotorSpeed(LEFT_MOTOR, defaultSpeedL-(i+1));
+      //      setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-i);
+      //  }
+        setMotorSpeed(LEFT_MOTOR, defaultSpeedL-i);
+        setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-i);
        i++;
        delay(100);
        }
@@ -153,7 +155,7 @@ void pivot(uint16_t degrees, bool direction) {
   void
 */
 void turnInPlace(uint16_t degrees, bool direction) {
-   float distance = round((float(degrees)/360)*PI*14);
+   float distance = (float(degrees)/360)*PI*14;
    uint32_t totalEncoderCount = countForDistance(distance);
    uint8_t wheelSpeedR;
    uint8_t wheelSpeedL;
@@ -192,10 +194,6 @@ void turnInPlace(uint16_t degrees, bool direction) {
      while(getEncoderRightCnt()<totalEncoderCount && getEncoderLeftCnt()<totalEncoderCount);       // stay in loop
   }
   disableMotor(BOTH_MOTORS);
-
-  Serial.print("Expected: " + String(totalEncoderCount) + '\t');
-  Serial.print("Actual Right: " + String(getEncoderRightCnt()) + '\t');
-  Serial.println("Actual Left: " + String(getEncoderLeftCnt()));
 }
 
 /*Turn in place the smallest amount possible.
@@ -335,6 +333,14 @@ void driveCircle(uint16_t degrees, uint16_t radius, bool direction) {
   }
 
   disableMotor(BOTH_MOTORS);
+}
+
+/* Stops motors using interrupt pins.
+  Returns:
+  void
+*/
+void stopMotorInterrupt(){
+    disableMotor(BOTH_MOTORS);
 }
 
 /* Measures distance using ultrasonic sensor.

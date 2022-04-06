@@ -10,7 +10,6 @@
 *              Drive forward 100cm.
 */
 
-#include "SimpleRSLK.h"
 #include "HelperRSLK.h"
 
 void setup() {
