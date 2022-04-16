@@ -25,7 +25,7 @@ uint32_t countForDistance(float distance) {
 */
 void driveStraight(float distance, bool direction, uint8_t wheelSpeed) {
   // Define speed and encoder count variables
-  uint8_t wheelSpeedL = wheelSpeed;
+  uint8_t wheelSpeedL = wheelSpeed+1;
   uint8_t wheelSpeedR = wheelSpeed;
   const uint8_t defaultSpeedL = wheelSpeedL;
   const uint8_t defaultSpeedR = wheelSpeedR;
@@ -38,69 +38,68 @@ void driveStraight(float distance, bool direction, uint8_t wheelSpeed) {
   // Set up the motors and encoders
   resetLeftEncoderCnt();  resetRightEncoderCnt();   // Set encoder pulse count back to 0
   setMotorDirection(BOTH_MOTORS,direction); // Cause the robot to drive in the direction specified
-  enableMotor(BOTH_MOTORS);                         // "Turn on" the motor
-  setMotorSpeed(LEFT_MOTOR,wheelSpeedL);         // Set motor speeds - variable,
-  setMotorSpeed(RIGHT_MOTOR, wheelSpeedR);        //   may change (adjust) later
+  enableMotor(BOTH_MOTORS);
+  setRawMotorSpeed(LEFT_MOTOR,wheelSpeedL);
+  setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedR);
 
   // Drive both motors until both have received the correct number of pulses to travel
-  while(leftTotalCount<(straight-50) || rightTotalCount<(straight-50)) {
-    leftTotalCount = getEncoderLeftCnt(); rightTotalCount = getEncoderRightCnt();
-
-    // Increasing the left wheel speed if the encoder count is less than the right.
-    if(leftTotalCount + 1 < rightTotalCount){
-      // If the speed of the left wheel speed is less than the defined threashold, then increase the left wheel speed.
-      // If it is greater than the defined threashold, then reset the right wheel speed to the default.
-      if(wheelSpeedL < 20) {
-       wheelSpeedL++;
-      } else {
-       wheelSpeedR = defaultSpeedR;
-      }
+  while(getEncoderLeftCnt()<(straight) || getEncoderRightCnt()<(straight)) {
+    if(getEncoderLeftCnt() < getEncoderRightCnt()-5){
+          wheelSpeedL+=2;
+          // Serial.println("Here1");
+    } else if(getEncoderLeftCnt() < getEncoderRightCnt()){
+        wheelSpeedL++;
     }
 
-    // Increasing the right wheel speed if the encoder count is less than the leftt.
-    if(rightTotalCount + 1 < leftTotalCount){
-      // If the speed of the right wheel speed is less than the defined threashold, then increase the right wheel speed.
-      // If it is greater than the defined threashold, then reset the left wheel speed to the default.
-      if(wheelSpeedR < 20) {
-       wheelSpeedR++;
-      } else {
-       wheelSpeedL = defaultSpeedL;
-      }
+    if(getEncoderLeftCnt() > getEncoderRightCnt()+5){
+       wheelSpeedL-=2;
+       // Serial.println("Here2");
+   } else if(getEncoderLeftCnt() > getEncoderRightCnt()){
+       wheelSpeedL--;
     }
 
-    setMotorSpeed(LEFT_MOTOR, wheelSpeedL);
-    setMotorSpeed(RIGHT_MOTOR, wheelSpeedR);
+    if (getEncoderLeftCnt() ==  getEncoderRightCnt()) {
+     wheelSpeedL = defaultSpeedL;
+     wheelSpeedR = defaultSpeedR;
+    }
+
+    setRawMotorSpeed(LEFT_MOTOR, wheelSpeedL);
+    setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedR);
+    delay(15);
   }
 
-   // Slow down the bot with the last 50 encoder ticks
-   setMotorSpeed(LEFT_MOTOR, defaultSpeedL);
-   setMotorSpeed(RIGHT_MOTOR, defaultSpeedR);
+   // // Slow down the bot with the 50 encoder ticks
+   // setRawMotorSpeed(LEFT_MOTOR, wheelSpeedL=defaultSpeedL);
+   // setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedR=defaultSpeedR);
 
-   uint8_t i = 1;
    // Run the last 50 encoder ticks stepping down the speed.
-   while(leftTotalCount<(straight) || rightTotalCount<(straight)) {
-     leftTotalCount = getEncoderLeftCnt(); rightTotalCount = getEncoderRightCnt();
-
-     // Step down the speed until the speed is 5.
-     if(wheelSpeed-i >= 0){
-
-      // // if i is less than 6 then slow down the right motor more than the left.
-      //   if(i <= 4){
-      //       setMotorSpeed(LEFT_MOTOR, defaultSpeedL-i);
-      //       setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-(i+1));
-      //
-      //  // if i is greater than 6 then step down the left motor speed more than right.
-      //  } else {
-      //      setMotorSpeed(LEFT_MOTOR, defaultSpeedL-(i+1));
-      //      setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-i);
-      //  }
-        setMotorSpeed(LEFT_MOTOR, defaultSpeedL-i);
-        setMotorSpeed(RIGHT_MOTOR, defaultSpeedR-i);
-       i++;
-       delay(100);
-       }
-   }
+   // while(getEncoderLeftCnt()<(straight) || getEncoderRightCnt()<(straight)) {
+   //   // Step down the speed until the speed is 0.
+   //  if(wheelSpeedL > 3){
+   //      if(wheelSpeedL > 25) {
+   //          wheelSpeedL-=2;
+   //      } else {
+   //          wheelSpeedL--;
+   //      }
+   //  }
+   //
+   //  if(wheelSpeedR > 3){
+   //      if(wheelSpeedR > 25){
+   //          wheelSpeedR-=2;
+   //      } else {
+   //          wheelSpeedR-=3;
+   //      }
+   //  }
+   //  //
+   //  Serial.println("Wheel Speed Left: " + String(wheelSpeedL) + '\t');
+   //  Serial.println("Wheel Speed Right " + String(wheelSpeedR) + '\t');
+   //
+   //  setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedL);
+   //  setRawMotorSpeed(LEFT_MOTOR, wheelSpeedR);
+   //  delay(40);
+   // }
    disableMotor(BOTH_MOTORS);
+   delay(500);
  }
 
 
@@ -194,6 +193,7 @@ void turnInPlace(uint16_t degrees, bool direction) {
      while(getEncoderRightCnt()<totalEncoderCount && getEncoderLeftCnt()<totalEncoderCount);       // stay in loop
   }
   disableMotor(BOTH_MOTORS);
+  delay(500);
 }
 
 /*Turn in place the smallest amount possible.
@@ -226,6 +226,9 @@ void turnInPlaceStatic(bool direction) {
      while(getEncoderRightCnt()<totalEncoderCount && getEncoderLeftCnt()<totalEncoderCount);       // stay in loop
      disableMotor(RIGHT_MOTOR);
      disableMotor(LEFT_MOTOR);
+     delay(500);
+
+
   } else {
      // Turn in place right
      // Set up the motors
@@ -239,6 +242,7 @@ void turnInPlaceStatic(bool direction) {
      // Drive motors until it has received the correct number of pulses to travel
      while(getEncoderRightCnt()<totalEncoderCount && getEncoderLeftCnt()<totalEncoderCount);       // stay in loop
      disableMotor(BOTH_MOTORS);
+     delay(500);
   }
 }
 
@@ -333,6 +337,7 @@ void driveCircle(uint16_t degrees, uint16_t radius, bool direction) {
   }
 
   disableMotor(BOTH_MOTORS);
+  delay(500);
 }
 
 /* Stops motors using interrupt pins.
@@ -341,6 +346,7 @@ void driveCircle(uint16_t degrees, uint16_t radius, bool direction) {
 */
 void stopMotorInterrupt(){
     disableMotor(BOTH_MOTORS);
+    delay(500);
 }
 
 /* Measures distance using ultrasonic sensor.
