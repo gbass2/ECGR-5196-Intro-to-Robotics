@@ -24,6 +24,9 @@ uint32_t countForDistance(float distance) {
   void
 */
 void driveStraight(float distance, bool direction, uint8_t wheelSpeed) {
+  if(distance == 0)
+    return;
+
   // Define speed and encoder count variables
   uint8_t wheelSpeedL = wheelSpeed+1;
   uint8_t wheelSpeedR = wheelSpeed;
@@ -165,8 +168,8 @@ void turnInPlace(uint16_t degrees, bool direction) {
 
    // Turn in place left
    if(direction == LEFT){
-     wheelSpeedR = 20;
-     wheelSpeedL = 21;
+     wheelSpeedR = 28;
+     wheelSpeedL = 28;
      // Set up the motors
      setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_FORWARD); // Set the right motor to go forwards
      setMotorDirection(LEFT_MOTOR,MOTOR_DIR_BACKWARD);  // Set the left motor to go backwards
@@ -178,8 +181,8 @@ void turnInPlace(uint16_t degrees, bool direction) {
      // Drive motors until it has received the correct number of pulses to travel
      while(getEncoderRightCnt()<totalEncoderCount && getEncoderLeftCnt()<totalEncoderCount);       // stay in loop
   } else {
-     wheelSpeedR = 20;
-     wheelSpeedL = 21;
+     wheelSpeedR = 28;
+     wheelSpeedL = 28;
      // Turn in place right
      // Set up the motors
      setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_BACKWARD); // Set the right motor to go backwards

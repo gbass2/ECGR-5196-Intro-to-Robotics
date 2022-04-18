@@ -1,7 +1,7 @@
 /*
 * Class:       ECGR 4161/5196 Lab 8
 * Authors:     Grayson Bass, Ryan Roscrow
-* Date:        04-11-2022
+* Date:        04-18-2022
 * Description: Use servo motor and ultrasonic sensor to identify closest object
 *              then drive to it.
 */
@@ -28,12 +28,12 @@ void setup() {
 void loop() {
     uint8_t wheelSpeed = 60;
     uint16_t degrees = 180; // Degrees to turnInPlace after driving straight.
-    uint8_t distanceToWall = 110; // Distance to each wall with error.
+    uint8_t distanceToWall = 110; //cm. Distance to each wall with error.
     uint16_t distanceToEnd = 220; // cm.
-    uint8_t distancePerCheck = 20; // cm
+    uint8_t distancePerCheck = 20; // cm. Holds the distance to drive between pings.
     uint8_t arrSize = distanceToEnd / distancePerCheck;
-    float leftArray[arrSize];
-    float rightArray[arrSize];
+    float leftArray[arrSize]; // Holds the pings on the left side of the bot.
+    float rightArray[arrSize]; // Holds the pings on the right side of the bot.
         
     uint8_t counterLeft = 0; // Holds the amount of objects found for the left side.
     uint8_t counterRight = 0; // Holds the amount of objects found for the right side.
@@ -42,7 +42,7 @@ void loop() {
     waitBtnPressed(LP_LEFT_BTN,"",BLUE_LED);
     delay(2000);
 
-  // Loop and drive an increment of 500cm and check to see if object present.
+  // Loop and drive an increment of 300cm and check to see if object present.
   for(uint8_t i=0; i < arrSize; i++){
     // Move servo 90 degrees to starting position.
     for(uint8_t pos = 90; pos > 0; pos -= 5) { // goes from 0 degrees to 90 degrees
@@ -67,6 +67,7 @@ void loop() {
       delay(20);                       // waits 20ms for the servo to reach the position
     }
     delay(500);
+    
     // Measure distance to the right of the bot.
     rightArray[i] = measureDistance();
 
@@ -100,7 +101,7 @@ void loop() {
       Serial.println("Right Array: " + String(i) + " " + String(rightArray[i]));            
    }
 
-  // Creating a dynamic array of the objects found.
+  // Creating a dynamicly allocated array of number of objects found.
   float *newLeft = new float(counterLeft);
   float *newRight = new float(counterRight);
 
@@ -108,15 +109,18 @@ void loop() {
   uint8_t rightItr = 0;
   float distToObj = 0; // Distance to current detected object.
   
-  // Loop through original array and find the distances to travel to object.
+  // Loop through original array and find the distances to travel to the objects.
     for(uint8_t i=0; i < arrSize; i++){
-      // Take the average of the distances traveled at the object if multiple pings find same object.
+      // Take the average of the distances to travel to the object if multiple pings find same object.
+      // For left array.
       if(leftArray[i] < distanceToWall) {
-//        Serial.println("i: " + String(i) + '\t');
         for(uint8_t j=i; j < arrSize; j++){
           if(leftArray[j] > distanceToWall){
-            newLeft[leftItr] = distToObj/(j-i);
-            leftItr++;
+            newLeft[leftItr] = distanceToEnd - (distToObj/(j-i)); // Take the average of the distances.
+
+            if(leftItr < (counterLeft-1))
+              leftItr++;
+              
             i = j;
             break;
           }
@@ -124,7 +128,7 @@ void loop() {
           distToObj+=j*distancePerCheck;
 
           if(j==(arrSize-1)){
-            newLeft[leftItr] = distToObj/((j-i)+1);
+            newLeft[leftItr] = distanceToEnd - (distToObj/((j-i)+1)); // Take the average of the distances.
             i=j;
             break;
           }
@@ -132,18 +136,22 @@ void loop() {
         distToObj = 0;
       }
 
+       // For right array.
        if(rightArray[i] < distanceToWall) {
         for(uint8_t j=i; j < arrSize; j++){
           if(rightArray[j] > distanceToWall){
-            newRight[rightItr] = distToObj/(j-i);
-            rightItr++;
+            newRight[rightItr] = distanceToEnd - (distToObj/(j-i)); // Take the average of the distances.
+
+            if(rightItr < (counterRight-1))
+              rightItr++;
+              
             i = j;
             break;
           }
           distToObj+=j*distancePerCheck;
 
           if(j==(arrSize-1)){
-            newRight[rightItr] = distToObj/((j-i)+1);
+            newRight[rightItr] = distanceToEnd - (distToObj/((j-i)+1)); // Take the average of the distances.
             i=j;
             break;
           }
@@ -162,28 +170,77 @@ void loop() {
 
   delay(3000);
 
-  return;
   // Turn 180 degrees to the right.
   turnInPlace(degrees, RIGHT);
-
-  uint16_t distanceDriven = 0;
-  while(leftItr > 0 && rightItr > 0){
-    if (newLeft[leftItr] < newRight[rightItr]) {
-      driveStraight(newLeft[leftItr]-distanceDriven, FORWARD,wheelSpeed);
+  
+  uint16_t distanceDriven = 0; // Holds the distance the bot has driven for the trip back.
+  
+  // Drive to each object and turn servo toward object.
+  while(leftItr >= 0 && rightItr >= 0){
+    if (newLeft[leftItr] < newRight[rightItr] && leftItr >= 0) {
+      uint16_t distToDrive = newLeft[leftItr]-distanceDriven;
+      driveStraight(distToDrive,FORWARD,wheelSpeed);
       distanceDriven = newLeft[leftItr];
-      leftItr--;
-      Serial.println("distance to travel Left: " + String(newLeft[leftItr]-distanceDriven));
-      Serial.println("distanceDriven: " + String(distanceDriven));
-      delay(3000);
-    }
-    else if (newRight[rightItr] < newLeft[leftItr]) {
-      driveStraight(newRight[rightItr]-distanceDriven, FORWARD,wheelSpeed);
-      distanceDriven = newRight[rightItr];
-      rightItr--;
-      Serial.println("distanceDriven Right: " + String(distanceDriven));
-      Serial.println("distance to travel: " + String(newRight[leftItr]-distanceDriven));
 
-      delay(3000);
+      if(leftItr != 0)
+        leftItr--;
+      else{
+        newLeft[leftItr] = 999;
+      }
+      
+      Serial.println("LeftItr: " + String(leftItr));
+      Serial.println("distance to travel Left: " + String(distToDrive));
+      Serial.println("distanceDriven: " + String(distanceDriven));
+  
+      // Move servo to left object
+      for(uint8_t pos = 90; pos < 180; pos += 5) { // goes from 0 degrees to 180 degrees
+        myservo.write(pos);              // tell servo to go to position in variable 'pos'
+        delay(20);                       // waits 20ms for the servo to reach the position
+      }
+
+      delay(2000);
+      
+      // Move servo to to start.
+      for(uint8_t pos = 180; pos > 90; pos -= 5) { // goes from 0 degrees to 90 degrees
+        myservo.write(pos);              // tell servo to go to position in variable 'pos'
+        delay(20);                       // waits 20ms for the servo to reach the position
+      }
+    } 
+    
+    else if (newRight[rightItr] < newLeft[leftItr] && rightItr >= 0) {
+      uint16_t distToDrive = newRight[rightItr]-distanceDriven;
+      driveStraight(distToDrive, FORWARD,wheelSpeed);
+      distanceDriven = newRight[rightItr];
+
+      if(rightItr !=0)
+        rightItr--;
+      else{
+        newRight[rightItr] = 999;
+      }
+
+      Serial.println("RightItr: " + String(rightItr));
+      Serial.println("distance to travel Right: " + String(distToDrive));
+      Serial.println("distanceDriven Right: " + String(distanceDriven));
+
+      // Move servo to right object.
+      for(uint8_t pos = 90; pos > 0; pos -= 5) { // goes from 0 degrees to 90 degrees
+        myservo.write(pos);              // tell servo to go to position in variable 'pos'
+        delay(20);                       // waits 20ms for the servo to reach the position
+     }
+
+      delay(2000);
+
+      // Move servo to start.
+      for(uint8_t pos = 0; pos < 90; pos += 5) { // goes from 0 degrees to 180 degrees
+        myservo.write(pos);              // tell servo to go to position in variable 'pos'
+        delay(20);                       // waits 20ms for the servo to reach the position
+      }
+    }
+
+    else {
+      uint16_t distToDrive = distanceToEnd - distanceDriven;
+      driveStraight(distToDrive, FORWARD,wheelSpeed);
+      break;
     }
   }
 }
