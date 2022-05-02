@@ -33,7 +33,7 @@ void driveStraight(float distance, bool direction, uint8_t wheelSpeed) {
     return;
 
   // Define speed and encoder count variables
-  uint8_t wheelSpeedL = wheelSpeed+1;
+  uint8_t wheelSpeedL = wheelSpeed;
   uint8_t wheelSpeedR = wheelSpeed;
   const uint8_t defaultSpeedL = wheelSpeedL;
   const uint8_t defaultSpeedR = wheelSpeedR;
@@ -58,18 +58,26 @@ void driveStraight(float distance, bool direction, uint8_t wheelSpeed) {
   // Drive both motors until both have received the correct number of pulses to travel
   while(!leftStopped || !rightStopped) {
 
+      // if(getEncoderLeftCnt() < (getEncoderRightCnt()-5)) {
+      //     wheelSpeedL+=2;
     if(getEncoderLeftCnt() < getEncoderRightCnt()) {
         wheelSpeedL++;
     }
 
+
+    // if(getEncoderLeftCnt() > getEncoderRightCnt()) {
+    //     wheelSpeedL--;
    if(getEncoderLeftCnt() > getEncoderRightCnt()) {
        wheelSpeedL--;
-    }
+   }
 
     if (getEncoderLeftCnt() ==  getEncoderRightCnt()) {
      wheelSpeedL = defaultSpeedL;
      wheelSpeedR = defaultSpeedR;
     }
+
+    if (wheelSpeedL > (defaultSpeedL+15))
+        wheelSpeedL = defaultSpeedL;
 
     setRawMotorSpeed(LEFT_MOTOR, wheelSpeedL);
     setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedR);
@@ -87,7 +95,7 @@ void driveStraight(float distance, bool direction, uint8_t wheelSpeed) {
   }
 
    disableMotor(BOTH_MOTORS);
-   delay(500);
+   // delay(50);
  }
 
 
@@ -155,8 +163,8 @@ void turnInPlace(float degrees, bool direction) {
 
    // Turn in place left
    if(direction == LEFT){
-     wheelSpeedR = 28;
-     wheelSpeedL = 27;
+     wheelSpeedR = 26;
+     wheelSpeedL = 26;
      // Set up the motors
      setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_FORWARD); // Set the right motor to go forwards
      setMotorDirection(LEFT_MOTOR,MOTOR_DIR_BACKWARD);  // Set the left motor to go backwards
@@ -169,7 +177,7 @@ void turnInPlace(float degrees, bool direction) {
      while(getEncoderRightCnt()<totalEncoderCount && getEncoderLeftCnt()<totalEncoderCount);       // stay in loop
   } else {
      wheelSpeedR = 27;
-     wheelSpeedL = 29;
+     wheelSpeedL = 27;
      // Turn in place right
      // Set up the motors
      setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_BACKWARD); // Set the right motor to go backwards
@@ -183,7 +191,7 @@ void turnInPlace(float degrees, bool direction) {
      while(getEncoderRightCnt()<totalEncoderCount && getEncoderLeftCnt()<totalEncoderCount);       // stay in loop
   }
   disableMotor(BOTH_MOTORS);
-  delay(500);
+  delay(100);
 }
 
 /*Turn in place the smallest amount possible.
@@ -233,7 +241,7 @@ void turnInPlaceStatic(uint32_t encoderCount, bool direction) {
      while(getEncoderRightCnt()<totalEncoderCount && getEncoderLeftCnt()<totalEncoderCount);       // stay in loop
   }
   disableMotor(BOTH_MOTORS);
-  delay(500);
+  delay(50);
 }
 
 /*Drives the RSLK bot x distance.
@@ -384,8 +392,7 @@ void tofInit() {
     if (distanceSensor.begin() != 0) //Begin returns 0 on a good init
 {
     Serial.println("Sensor failed to begin. Please check wiring. Freezing...");
-    while (1)
-      ;
+    while (1);
   }
   Serial.println("Sensor online!");
   distanceSensor.setDistanceModeLong();
@@ -397,21 +404,38 @@ void tofInit() {
   Returns:
   float: Distance measured in mm.
 */
-float measureTOFMM() {
+int measureTOFMM() {
     int distanceArray[15];
     for(uint8_t i=0; i < 15; i++){
         distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
+        uint32_t t0 = millis();
+        uint32_t t1 = millis();
         while (!distanceSensor.checkForDataReady()) {
             delay(1);
+            if(t1-t0 > 5000) {
+                i--;
+                continue;
+                // distanceSensor.clearInterrupt();
+                // distanceSensor.stopRanging();
+                // distanceSensor.startRanging();
+                // distanceArray[i] = distanceSensor.getDistance();
+                // distanceSensor.clearInterrupt();
+                // distanceSensor.stopRanging();
+
+            }
+            t1 = millis();
           }
           distanceArray[i] = distanceSensor.getDistance(); //Get the result of the measurement from the sensor
+          if(distanceArray[i] > 3500) {
+              return 0;
+          }
           distanceSensor.clearInterrupt();
           distanceSensor.stopRanging();
       }
 
     // Sort the 15 measurements and take the median.
     sortArray(distanceArray);
-    //
+
     return distanceArray[8];
 }
 
@@ -420,22 +444,9 @@ float measureTOFMM() {
   float: Distance measured in cm.
 */
 float measureTOFCM() {
-    float distanceArray[15];
-    for(uint8_t i=0; i < 15; i++){
-        distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
-        while (!distanceSensor.checkForDataReady()) {
-            delay(1);
-          }
-          distanceArray[i] = distanceSensor.getDistance(); //Get the result of the measurement from the sensor
-          distanceSensor.clearInterrupt();
-          distanceSensor.stopRanging();
-      }
+    float distanceMM = measureTOFMM();
 
-    // Sort the 15 measurements and take the median.
-    sortArray(distanceArray);
-
-    float distanceCM = distanceArray[8]/10; // Convert mm to cm.
-    return distanceCM;
+    return (distanceMM)/10; // Convert mm to cm.
 }
 
  /* Initializes the sensors minimum and maximum values
@@ -488,14 +499,23 @@ void followLine() {
     setRawMotorSpeed(RIGHT_MOTOR, 30);
     setRawMotorSpeed(LEFT_MOTOR, 30);
 
-    delay(100);
+    // delay(20);
 
-    while(sensorVal[6] < 2300) {
+    while(sensorVal[3] < 2300) {
+        readLineSensor(sensorVal);
+    }
+
+    // disableMotor(BOTH_MOTORS);
+    // delay(200);
+    // readLineSensor(sensorVal);
+    // enableMotor(BOTH_MOTORS);
+
+    while(sensorVal[5] < 2300) {
         readLineSensor(sensorVal);
     }
 
     disableMotor(BOTH_MOTORS);
-    delay(500);
+    delay(200);
     readLineSensor(sensorVal);
     enableMotor(BOTH_MOTORS);
     setRawMotorSpeed(RIGHT_MOTOR, 0);
@@ -511,6 +531,7 @@ void followLine() {
            sensorVal[6] > 2300 && sensorVal[7] > 2300) {
             disableMotor(BOTH_MOTORS);
             delay(500);
+            break;
         }
 
         readCalLineSensor(sensorVal,sensorCalVal,sensorMinVal,sensorMaxVal,lineColor);

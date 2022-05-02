@@ -13,6 +13,7 @@ void setup() {
  }
 
 void loop() {
-  Serial.println(measureTOFMM());
-  delay(200);
+  Serial.println(measureTOFCM());
+//  measureTOFCM();
+  delay(500);
 }

@@ -15,6 +15,9 @@
 #define CNT_PER_REV 360
 #define WHEEL_DIAMETER 6.99999
 #define WHEEL_BASE 14
+#define BOT_LENGTH 16.5 // Length of the bot.
+#define BOT_WIDTH 7 // Length of the bot.
+#define FULL_BOT_WIDTH 14
 #define FULL_CIRCLE_DEGREES 360
 #define LEFT 0
 #define RIGHT 1
@@ -46,7 +49,7 @@ void followLine();
 // Function that returns the median distance using an ultrasonic sensor and ToF
 // float measureDistanceUltra();
 void tofInit();
-float measureTOFMM(); // Measure distance with tof in mm.
+int measureTOFMM(); // Measure distance with tof in mm.
 float measureTOFCM(); // Measure distance with tof in cm.
 
 
@@ -60,7 +63,7 @@ float measureTOFCM(); // Measure distance with tof in cm.
 */
 
 template<typename T, size_t arrSize>
-T sortArray(T (&array)[arrSize]) {
+void sortArray(T (&array)[arrSize]) {
   T hold;
   for(size_t i=0; i < arrSize; i++) {
     for(size_t j=0; j < arrSize; j++) {

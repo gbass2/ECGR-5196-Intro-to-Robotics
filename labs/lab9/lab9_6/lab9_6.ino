@@ -104,7 +104,7 @@ void localizeRoom() {
 
     
     // Drive to the middle of both dstances.
-    uint16_t distanceToMiddle;
+    float distanceToMiddle;
     if(distanceToCenter[0] < distanceToCenter[2]) {
       distanceToMiddle = ((distanceToCenter[0] + distanceToCenter[2] + botLength))/2;
       distanceToMiddle-=distanceToCenter[0];
@@ -132,6 +132,58 @@ void localizeRoom() {
 
     driveStraight(distanceToMiddle, FORWARD, wheelSpeed);
     delay(100);
+}
+
+void traverseMaze() {
+  uint8_t wheelSpeed = 35;
+  float holeThreashold = 400;
+  float wallThreashold = 10;
+  float distances[3];
+  float distanceToDrive;
+  uint8_t degrees = 95;
+  bool holeFound = false;
+
+  while(!holeFound) {
+    // Get straight measurement.
+    distances[0] = measureTOFCM();
+    
+    // Turn servo left and get measurment.
+    myservo.write(0);
+    distances[1] = measureTOFCM();
+    delay(100);
+    
+    // Turn servo right and get measurement.
+    myservo.write(180);
+    distances[2] = measureTOFCM();
+    delay(100);
+  
+    Serial.println(String(distances[0]) + '\t' + String(distances[1]) + '\t' + String(distances[2]));
+  
+    myservo.write(84);
+    
+    // If left is greater than wallThreashold turn left and drive till wall threashold.
+    if(distances[1] > wallThreashold) {
+      distanceToDrive = distances[1] - wallThreashold;
+      Serial.println(distanceToDrive);
+      turnInPlace(degrees, LEFT);
+      delay(250);
+      driveStraight(distanceToDrive, FORWARD, wheelSpeed);
+  
+    // If cannot turn left and right is greater than straight then turn right.
+    } else if(distances[2] > distances[0]) {
+      distanceToDrive = distances[2] - wallThreashold;
+      turnInPlace(degrees, RIGHT);
+      delay(250);
+      driveStraight(distanceToDrive, FORWARD, wheelSpeed);
+    
+    // If cannot do either than go straight.
+    } else {
+      distanceToDrive = distances[0] - wallThreashold;
+      driveStraight(distanceToDrive, FORWARD, wheelSpeed);
+    }
+  
+    delay(250);
+    }
 }
 
 
@@ -162,11 +214,13 @@ void loop() {
     delay(2000);
 
     // Find the perpendicular wall.
-    findPerpendicular();
+    // findPerpendicular();
 
     // Localize and find center.
-    localizeRoom();
+    // localizeRoom();
 
     // Follow the line to the maze.
-    followLine();
+    // followLine();
+
+    traverseMaze();
 }

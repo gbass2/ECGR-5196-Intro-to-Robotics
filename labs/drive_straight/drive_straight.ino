@@ -11,18 +11,21 @@ void setup() {
  setupRSLK();  // Set up all o f the pins & functions needed to be used by the TI bot
  Serial.begin(38400);
  while(!Serial);
+
+ resetLeftEncoderCnt();
+ resetRightEncoderCnt();
 }
 
 void loop() {
   uint8_t degrees = 180;
-  uint16_t distance = 20; // cm.
-  uint8_t wheelSpeed = 50;
+  uint16_t distance = 100; // cm.
+  uint8_t wheelSpeed = 30;
 
   delay(5000);
 ////
   driveStraight(distance,FORWARD,wheelSpeed);
 
-//  exit(1);
+  exit(1);
 
   // Drive 5m.
   for(uint8_t i=0; i < 15; i++){
