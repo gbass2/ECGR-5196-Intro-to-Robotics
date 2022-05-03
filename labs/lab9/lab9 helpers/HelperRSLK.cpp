@@ -95,62 +95,8 @@ void driveStraight(float distance, bool direction, uint8_t wheelSpeed) {
   }
 
    disableMotor(BOTH_MOTORS);
-   // delay(50);
  }
 
-
-/*Pivots the x degrees.
-  Parameters:
-  degrees (uint16_t): degrees to pivot.
-  direction (bool): Specifies the direction of the bot.
-
-  Returns:
-  void
-*/
-// void pivot(uint16_t degrees, bool direction) {
-//   // Calculating the distance to pivot based on the degrees defined.
-//   uint16_t distance = round((float(degrees)/360)*PI*28);
-//   uint32_t totalEncoderCount = countForDistance(distance);
-//   uint8_t wheelSpeed = 10; // Setting wheel speed
-//
-//   // Reset the encoder counts
-//   resetRightEncoderCnt();                           // Set encoder pulse count back to 0
-//   resetLeftEncoderCnt();
-//
-//   // Pivoting left
-//   if(direction == LEFT){
-//    // Set up the motors and encoders
-//    setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_FORWARD); // Cause the robot to drive forward
-//    enableMotor(RIGHT_MOTOR);                         // "Turn on" the motor
-//    setMotorSpeed(RIGHT_MOTOR, wheelSpeed);
-//
-//    // Drive R motor until it has received the correct number of pulses to travel
-//    while((getEncoderRightCnt()<totalEncoderCount));       // stay in loop
-//    disableMotor(RIGHT_MOTOR);
-//   } else {
-//    // Pivot right
-//    // Set up the motors and encoders
-//    setMotorDirection(LEFT_MOTOR,MOTOR_DIR_FORWARD); // Cause the robot to drive forward
-//    enableMotor(LEFT_MOTOR);                         // "Turn on" the motor
-//    setMotorSpeed(LEFT_MOTOR, wheelSpeed);
-//    delay(500);
-//
-//    // Drive L motor until it has received the correct number of pulses to travel
-//    while(getEncoderLeftCnt()<totalEncoderCount);       // stay in loop
-//    disableMotor(LEFT_MOTOR);
-//    delay(500);
-//   }
-// }
-
-
-/*Turn in place the x degrees.
-  Parameters:
-  degrees (uint16_t): degrees to pivot.
-  direction (bool): Specifies the direction of the bot.
-
-  Returns:
-  void
-*/
 void turnInPlace(float degrees, bool direction) {
    float distance = (degrees/360)*PI*14;
    uint32_t totalEncoderCount = countForDistance(distance);
@@ -244,156 +190,15 @@ void turnInPlaceStatic(uint32_t encoderCount, bool direction) {
   delay(50);
 }
 
-/*Drives the RSLK bot x distance.
-  Parameters:
-  degrees (uint16_t): Specifies the amount of degrees to drive for.
-  radius (uint16_t): Specifies the radius of the cirlce.
-  direction (bool): Specifies the direction of the bot.
-
-  Returns:
-  void
-*/
-// void driveCircle(uint16_t degrees, uint16_t radius, bool direction) {
-//   // Calculating the encoder counts for the inner and outer wheel.
-//   uint16_t distanceInnerWheel = round((float(degrees)/360) * (2*PI*(radius-7)));
-//   uint16_t distanceOuterWheel = round((float(degrees)/360) * (2*PI*(radius+7)));
-//   uint32_t totalInnerCount = countForDistance(distanceInnerWheel);
-//   uint32_t totalOuterCount = countForDistance(distanceOuterWheel);
-//   uint32_t innerEncoderCount = 0;
-//   uint32_t outerEncoderCount = 0;
-//
-//   int8_t wheelSpeedIn = 40;  // Wheel speed for the inner wheel.
-//   int8_t wheelSpeedOut = 48; // Wheel speed for the outer wheel.
-//
-//   // Setting wheel speed for both motors
-//
-//   uint8_t defaultSpeedIn = wheelSpeedIn;
-//   uint8_t defaultSpeedOut = wheelSpeedOut;
-//
-//   float innerRatio = float(totalInnerCount)/totalOuterCount;
-//   float outerRatio = float(totalOuterCount)/totalInnerCount;
-//
-//   // Reset encoder counts
-//   resetRightEncoderCnt();
-//   resetLeftEncoderCnt();
-//
-//   // Set up the motors
-//   setMotorDirection(RIGHT_MOTOR,MOTOR_DIR_FORWARD);
-//   setMotorDirection(LEFT_MOTOR,MOTOR_DIR_FORWARD);
-//   enableMotor(RIGHT_MOTOR);                         // "Turn on" the motor
-//   enableMotor(LEFT_MOTOR);                         // "Turn on" the motor
-//
-//   // Setting speeds.
-//   if(direction == LEFT){
-//     setRawMotorSpeed(LEFT_MOTOR, wheelSpeedIn);
-//     setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedOut);
-//   } else {
-//     setRawMotorSpeed(LEFT_MOTOR, wheelSpeedOut);
-//     setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedIn);
-//   }
-//
-//   // Running the motors while both are less than the total encoder count.
-//   while(innerEncoderCount < totalInnerCount && outerEncoderCount < totalOuterCount){
-//     // Retrieving the encoder counts. If the direction is left then inner count = left encoder count.
-//     // If not then inner count = right encoder count.
-//     if(direction == LEFT){
-//         innerEncoderCount = getEncoderLeftCnt(); outerEncoderCount = getEncoderRightCnt();
-//     } else {
-//         innerEncoderCount = getEncoderRightCnt(); outerEncoderCount = getEncoderLeftCnt();
-//     }
-//
-//     // Checking to see if the left encoder count is less than the right.
-//     if((outerRatio*innerEncoderCount) + 1 < outerEncoderCount){
-//       // If it is less, then check wheel speed and make sure it is under the threashold.
-//       // If it is then increase the inner wheel speed. If not the set the outer wheel speed back to default.
-//       if(wheelSpeedIn < 60) {
-//        wheelSpeedIn++;
-//       } else {
-//        wheelSpeedOut = defaultSpeedOut;
-//       }
-//     }
-//
-//     // Checking to see if the right encoder count is less than the left.
-//     if((innerRatio*outerEncoderCount) + 1 < innerEncoderCount){
-//       // If it is left, then check wheel speed and make sure it is under the threashold.
-//       // If it is then increase the outer wheel speed. If not the set the inner wheel speed back to default.
-//       if(wheelSpeedOut < 70) {
-//        wheelSpeedOut++;
-//       } else {
-//        wheelSpeedIn = defaultSpeedIn;
-//       }
-//     }
-//
-//     // Setting updated speeds.
-//     if(direction == LEFT){
-//       setRawMotorSpeed(LEFT_MOTOR, wheelSpeedIn);
-//       setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedOut);
-//     } else {
-//       setRawMotorSpeed(LEFT_MOTOR, wheelSpeedOut);
-//       setRawMotorSpeed(RIGHT_MOTOR, wheelSpeedIn);
-//     }
-//   }
-//
-//   disableMotor(BOTH_MOTORS);
-//   delay(500);
-// }
-
-/* Stops motors using interrupt pins.
-  Returns:
-  void
-*/
-// void stopMotorInterrupt(){
-//     disableMotor(BOTH_MOTORS);
-//     delay(500);
-// }
-
-/* Measures distance using ultrasonic sensor.
-  Returns:
-  float: Distance measured.
-*/
-// float measureDistanceUltra() {
-//   long pulseLength;
-//   float centimeters;
-//   float distanceArray[11];
-//
-//   // Measuring 5 pulses from the ultrasonic.
-//   for(size_t i=0; i < 11; i++) {
-//     digitalWrite(trigPin, LOW);            // send low to get a clean pulse
-//     delayMicroseconds(10);                  // let it settle
-//     digitalWrite(trigPin, HIGH);           // send high to trigger device
-//     delayMicroseconds(10);                 // let it settle
-//     digitalWrite(trigPin, LOW);            // send low to get a clean pulse
-//     delayMicroseconds(10);                  // let it settle
-//     pulseLength = pulseIn(echoPin, HIGH);  // measure pulse coming back
-//     centimeters = float(pulseLength) / 58;
-//     distanceArray[i] = centimeters; // Adding distance to array.
-//   }
-//
-//   // Sort the array.
-//   sortArray(distanceArray);
-//   delay(500);
-//   return distanceArray[6]; // Returning the median of the array.
-// }
-//
-/* Initializes the Time of Flight sensor.
-  Returns:
-  void
-*/
 void tofInit() {
     // Start i2c.
     Wire.begin();
 
-    // Start the sensor.
-    // if (distanceSensor.begin() != 0) { //Begin returns 0 on a good init
-    //   Serial.println("Sensor failed to begin. Please check wiring. Freezing...");
-    //   while (1);
-    // }
-    // Serial.println("Sensor online!");
-    if (distanceSensor.begin() != 0) //Begin returns 0 on a good init
-{
-    Serial.println("Sensor failed to begin. Please check wiring. Freezing...");
-    while (1);
+    if (distanceSensor.begin() != 0) {  //Begin returns 0 on a good init.
+        Serial.println("Sensor failed to begin. Please check wiring. Freezing...");
+        while (1);
   }
+  
   Serial.println("Sensor online!");
   distanceSensor.setDistanceModeLong();
   distanceSensor.setTimingBudgetInMs(50); // Set how long is allotted to the measurement.

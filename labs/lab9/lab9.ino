@@ -2,7 +2,10 @@
 * Class:       ECGR 4161/5196 Lab 9
 * Authors:     Grayson Bass
 * Date:        05-02-2022
-* Description:
+* Description: Localizes bot inside a room. 
+*              Finds the center of the room.
+*              Finds a line and follows to a maze.
+*              Traverses maze.
 */
 
 #include <Servo.h>
@@ -11,57 +14,63 @@
 
 Servo myservo;  // create servo object to control a servo
 
-// Functions that use the servo.
-
 /* Finds the perpendicular wall to the bot.
   Returns:
   void
 */
 void findPerpendicular() {
     int distToWall[2]; // Array to store the unsorted distances.
-    bool isPerp = false;
+    bool isPerp = false; // Set to true when the perpendicular distance is found.
     float encoderCount = 40;
 
     while(1) {
-    if(abs(distToWall[0] - distToWall[1]) < 10 && distToWall[0] > 0 && distToWall[1]  > 0)
-      break;
+      // If the perpendicular distance is found then break.
+      if(abs(distToWall[0] - distToWall[1]) < 10 && distToWall[0] > 0 && distToWall[1]  > 0)
+        break;
 
-    turnInPlaceStatic(encoderCount,LEFT);
-    distToWall[0] = measureTOFMM();
-    delay(100);
-    
-    turnInPlaceStatic(2*encoderCount,RIGHT);
-    distToWall[1] = measureTOFMM();
-    delay(100);
+      // Turn left and measure.
+      turnInPlaceStatic(encoderCount,LEFT);
+      distToWall[0] = measureTOFMM();
+      delay(100);
 
-    turnInPlaceStatic(encoderCount,LEFT);
-    delay(100);
+      // Turn right num of encoderTicks to the right of initial point.
+      turnInPlaceStatic(2*encoderCount,RIGHT);
+      distToWall[1] = measureTOFMM();
+      delay(100);
 
-    Serial.println(String(distToWall[0]) + '\t' + distToWall[1]);
+      // Turn back to initial point.
+      turnInPlaceStatic(encoderCount,LEFT);
+      delay(100);
+  
+      Serial.println(String(distToWall[0]) + '\t' + distToWall[1]);
 
-    if(abs((distToWall[0] - distToWall[1])) < 10){
-      isPerp = true;
-    }
+      // If perpendicular is found set flag to true.
+      if(abs((distToWall[0] - distToWall[1])) < 10){
+        isPerp = true;
+      }
+      
+      // If the left distance is less than right distance turn to the left towards perpendicular.
+      if(distToWall[0] < distToWall[1]){ 
+        if(!isPerp) {
+          Serial.println((abs(distToWall[0] - distToWall[1]) > 50));
+          if(abs(distToWall[0] - distToWall[1]) > 50) {
+            turnInPlaceStatic(encoderCount/2,LEFT);
+          } else {
+             turnInPlaceStatic(3,LEFT);
+          }
+        }
 
-    if(distToWall[0] < distToWall[1]){ 
-      if(!isPerp) {
-        Serial.println((abs(distToWall[0] - distToWall[1]) > 50));
-        if(abs(distToWall[0] - distToWall[1]) > 50) {
-          turnInPlaceStatic(encoderCount/2,LEFT);
-        } else {
-           turnInPlaceStatic(3,LEFT);
+      // If the left distance is greater than right distance turn to the right towards perpendicular.
+      } else {
+        if(!isPerp) {
+          if(abs(distToWall[0] - distToWall[1]) > 50) {
+            turnInPlaceStatic(encoderCount/2,RIGHT);
+          } else {
+            turnInPlaceStatic(3,RIGHT);
+          }
         }
       }
-    } else {
-      if(!isPerp) {
-        if(abs(distToWall[0] - distToWall[1]) > 50) {
-          turnInPlaceStatic(encoderCount/2,RIGHT);
-        } else {
-          turnInPlaceStatic(3,RIGHT);
-        }
-      }
     }
-  }
 }
 
 
@@ -72,7 +81,10 @@ void findPerpendicular() {
 void localizeRoom() {
     uint8_t wheelSpeed = 30;
     float degrees = 90; // Degrees to turnInPlace after driving straight.
+
     
+    // Find the 4 measurements to localize. forwards towards perpendicular wall, 180 of the perpendicular,
+    // and left and right after turning 180.
     float distanceToCenter[4];
     distanceToCenter[0] = measureTOFCM();
     delay(500);
@@ -93,9 +105,10 @@ void localizeRoom() {
 
     degrees = 90;
     
-    // Drive to the middle of both dstances.
+    // Drive to the middle of both distances.
     float distanceToMiddle = 0;
 
+    // drive to the center of the room perpendicular to the shortest wall found.
     distanceToMiddle = ((distanceToCenter[0] + distanceToCenter[2] + BOT_LENGTH))/2;
     distanceToMiddle-=distanceToCenter[0];
     distanceToMiddle-=7;
@@ -103,13 +116,15 @@ void localizeRoom() {
     driveStraight(distanceToMiddle, FORWARD, wheelSpeed);
     delay(100);
 
+    // Turn to the right if the left distance is less than right and the distance towards 
+    // perpendicular wall is less than the opposite wall.
     if(distanceToCenter[1] < distanceToCenter[3] && distanceToCenter[0] < distanceToCenter[2]) {
       turnInPlace(degrees, RIGHT);
     } else {
       turnInPlace(degrees+3, LEFT);
     }
 
-    // Turn Right.
+    // Calculate the distance to drive between the left and right walls of the perpendicular.
     if(distanceToCenter[1] < distanceToCenter[3]) {
       distanceToMiddle = ((distanceToCenter[1] + distanceToCenter[3] - FULL_BOT_WIDTH))/2;
       distanceToMiddle-=distanceToCenter[1];
@@ -125,22 +140,25 @@ void localizeRoom() {
     delay(100);
 }
 
-bool initCheck  = true;
+bool initCheck  = true; // Flag for when the maze is in its first iteration.
+                        // Only worked when declared as global.
 
+/* Traverses the maze.
+  Returns:
+  void
+*/
 void traverseMaze() {
   uint8_t wheelSpeed = 40;
-  int holeThreashold = 200;
-  int forwardThreashold = 14;
-  int wallThreashold = 30;
-  int leftThreashold = 40;
-  float leftWallDistance;
-  float rightWallDistance;
-  float distances[3];
-  float distanceToDrive;
+  int holeThreshold = 200; // The distance to detect an exit point.
+  int forwardThreshold = 14; // The amound of distance used  to determine when to turn right straight ahead.
+  int leftThreshold = 40; // The amound of distance used to determine when to turn right to the left of the bot.
+  float distances[3]; // Holds the three measurements.
+  float distanceToDrive; // Distance to drive after each set of measurments.
   uint8_t degrees = 90;
   bool holeFound = false;
   bool direction = LEFT;
 
+  // Loop indefinately. 
   while(!holeFound) {
       // Get straight measurement.
       myservo.write(84);
@@ -152,13 +170,11 @@ void traverseMaze() {
       distances[1] = measureTOFCM();
       delay(25);
 
-//    if(initCheck) {
       // Turn servo right and get measurement.
       myservo.write(180);
       distances[2] = measureTOFCM();
       delay(100);
       direction = RIGHT;
-//    }
 
     myservo.write(84);
     
@@ -167,7 +183,7 @@ void traverseMaze() {
       distanceToDrive = distances[1];
 
       if(!initCheck) {
-        if(distances[1] < holeThreashold)
+        if(distances[1] < holeThreshold)
           distanceToDrive=20;
         else {
           distanceToDrive=10;
@@ -181,7 +197,8 @@ void traverseMaze() {
       delay(100);
       driveStraight(distanceToDrive, FORWARD, wheelSpeed);
 
-    } else if(distances[2] >= holeThreashold) {
+    // If the right is greater than the hole threshold then found the exit. Turn right and drive distance.
+    } else if(distances[2] >= holeThreshold) {
       distanceToDrive = 3;
       driveStraight(distanceToDrive, FORWARD, wheelSpeed);
       delay(100);
@@ -189,8 +206,9 @@ void traverseMaze() {
       delay(100);
       distanceToDrive = distances[2];
       driveStraight(distanceToDrive, FORWARD, wheelSpeed);
-    
-    } else if(distances[0] <= forwardThreashold && distances[1] <= leftThreashold) {
+
+      // If straight and left are less than their thresholds then robot is in corner. Turn right.
+    } else if(distances[0] <= forwardThreshold && distances[1] <= leftThreshold) {
       turnInPlace(degrees, RIGHT);
       
     // If cannot do either than go straight.
@@ -201,18 +219,11 @@ void traverseMaze() {
         turnInPlaceStatic(10, RIGHT);
       }
       
-//      distanceToDrive = measureTOFCM();
-//      if(distanceToDrive > wallThreashold) {
-        distanceToDrive=5;
-//      } else {
-//        distanceToDrive-= forwardThreashold;
-//      }
-//      
+      distanceToDrive=5;
+      
       driveStraight(distanceToDrive, FORWARD, wheelSpeed);
     }
     
-//  
-//    delay(50);
     initCheck=false;
     }
 }
@@ -224,6 +235,7 @@ void setup() {
     setupWaitBtn(LP_LEFT_BTN); // Set up left button.
     setupLed(BLUE_LED); // Setup the blue led.
 
+    // Initialize the line following and tof.
     initFollowLine();
     tofInit();
 
@@ -245,15 +257,15 @@ void loop() {
     waitBtnPressed(LP_LEFT_BTN,"",BLUE_LED);
     delay(2000);
 
-//    // Find the perpendicular wall.
-     findPerpendicular();
+    // Find the perpendicular wall.
+    findPerpendicular();
 
     // Localize and find center.
-     localizeRoom();
+    localizeRoom();
 
     // Follow the line to the maze.
-     followLine();
+    followLine();
 
-    //
-     traverseMaze();
+    // Traverse the maze.
+    traverseMaze();
 }
